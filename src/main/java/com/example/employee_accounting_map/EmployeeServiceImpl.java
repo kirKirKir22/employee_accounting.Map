@@ -14,6 +14,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final Map<String, Employee> employeeMap;
     private static final int MAX_EMPLOYEES = 100;
 
+    private String generateKey(String firstName, String lastName) {
+        return firstName + lastName;
+    }
+
+
     public EmployeeServiceImpl() {
         employeeMap = new HashMap<>();
 
@@ -23,11 +28,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     public Employee addEmployee(String firstName, String lastName) {
         Employee newEmployee = new Employee(firstName, lastName);
 
-        if (employeeMap.size() < MAX_EMPLOYEES) {
+        if (employeeMap.size() > MAX_EMPLOYEES) {
             throw new EmployeeStorageIsFullException("превышен лимит количества сотрудников в фирме");
         }
-        String key = firstName + lastName;
-        if (employeeMap.containsKey(newEmployee)) {
+        String key = generateKey(firstName, lastName);
+        if (employeeMap.containsKey(key)) {
             throw new EmployeeAlreadyAddedException("в коллекции уже есть такой сотрудник");
         }
         employeeMap.put(key, newEmployee);
@@ -37,7 +42,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Employee removeEmployee(String firstName, String lastName) {
         Employee employee = employeeMap.remove(firstName + lastName);
-        if (!employeeMap.containsValue(employee)) {
+        String key = generateKey(firstName, lastName);
+        if (!employeeMap.containsValue(key)) {
             throw new EmployeeNotFoundException("сотрудник не найден");
 
         }
@@ -47,11 +53,12 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Employee findEmployee(String firstName, String lastName) {
         Employee employee = employeeMap.get(firstName + lastName);
+        String key = generateKey(firstName, lastName);
 
-        if (employeeMap.containsKey(employee)) {
-            return employee;
+        if (!employeeMap.containsKey(key)) {
+            throw new EmployeeNotFoundException("сотрудник не найден");
         }
-        throw new EmployeeNotFoundException("сотрудник не найден");
+        return employee;
 
     }
 
@@ -61,3 +68,4 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
 }
+
